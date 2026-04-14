@@ -39,7 +39,7 @@ export const TRAINING_COURSES: TrainingCourse[] = [
     title: "Introduction to iAutoSale",
     description:
       "Understand the problem iAutoSale solves, how the consignment model works, the seven-stage process, and why this matters for your role as a sales rep.",
-    videoUrl: "/training/course-1-welcome.mp4",
+    videoUrl: "https://www.youtube.com/embed/NMwhwi8yqG8",
     duration: "18:32",
     sections: [
       {
@@ -142,7 +142,7 @@ export const TRAINING_COURSES: TrainingCourse[] = [
     title: "Scope of Your Role",
     description:
       "Learn exactly what your role covers as a sales rep \u2014 from lead management to signed agreements \u2014 and how you are measured day-to-day.",
-    videoUrl: "/training/course-2-scope.mp4",
+    videoUrl: "https://www.youtube.com/embed/kq-XFkf3SuM",
     duration: "14:17",
     sections: [
       {
@@ -245,7 +245,7 @@ export const TRAINING_COURSES: TrainingCourse[] = [
     title: "Product & Service Knowledge",
     description:
       "Deep-dive into the iAutoSale proposition, the five things we do, the numbers you must know, and how to answer common seller questions with confidence.",
-    videoUrl: "/training/course-3-product.mp4",
+    videoUrl: "https://www.youtube.com/embed/s9nxiE9v20k",
     duration: "22:45",
     sections: [
       {
@@ -349,7 +349,7 @@ export const TRAINING_COURSES: TrainingCourse[] = [
     title: "Cold Calling",
     description:
       "Master the right mindset, the five-part call structure, the word-for-word opener, and how to handle the four most common first responses.",
-    videoUrl: "/training/course-4-cold-calling.mp4",
+    videoUrl: "https://www.youtube.com/embed/ILh0c8dK7vM",
     duration: "20:08",
     sections: [
       {
@@ -453,7 +453,7 @@ export const TRAINING_COURSES: TrainingCourse[] = [
     title: "Contracts & Negotiation",
     description:
       "Learn to walk sellers confidently through the consignment agreement and handle the most common negotiation scenarios using value-based techniques.",
-    videoUrl: "/training/course-5-contracts.mp4",
+    videoUrl: "https://www.youtube.com/embed/heDfO4MxewI",
     duration: "16:50",
     sections: [
       {

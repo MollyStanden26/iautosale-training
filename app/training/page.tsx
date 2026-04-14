@@ -431,16 +431,32 @@ function TabBar({
 function VideoTab({ course }: { course: TrainingCourse }) {
   return (
     <div style={{ padding: 28 }}>
-      <video
-        src={course.videoUrl}
-        controls
+      <div
         style={{
+          position: "relative",
           width: "100%",
+          paddingBottom: "56.25%", // 16:9 aspect ratio
           borderRadius: 14,
+          overflow: "hidden",
           background: "#000",
           maxHeight: 520,
         }}
-      />
+      >
+        <iframe
+          src={course.videoUrl}
+          title={`Course ${course.number}: ${course.title}`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            border: 0,
+          }}
+        />
+      </div>
       <h2
         className="font-heading"
         style={{
