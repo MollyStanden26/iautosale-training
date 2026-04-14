@@ -551,36 +551,12 @@ export const TRAINING_COURSES: TrainingCourse[] = [
 ];
 
 /* ================================================================== */
-/*  MOCK PROGRESS                                                      */
+/*  COURSE PROGRESS                                                    */
+/*  Progress is tracked per-user in localStorage at runtime.           */
+/*  This export is kept for backwards compatibility only.              */
 /* ================================================================== */
 
 export const COURSE_PROGRESS: Record<
   string,
   { completed: boolean; quizScore: number | null; lastAccessed: string }
-> = {
-  "course-1": {
-    completed: true,
-    quizScore: 5,
-    lastAccessed: "2026-04-05T09:12:00Z",
-  },
-  "course-2": {
-    completed: true,
-    quizScore: 4,
-    lastAccessed: "2026-04-06T14:30:00Z",
-  },
-  "course-3": {
-    completed: false,
-    quizScore: null,
-    lastAccessed: "2026-04-07T11:45:00Z",
-  },
-  "course-4": {
-    completed: false,
-    quizScore: null,
-    lastAccessed: "",
-  },
-  "course-5": {
-    completed: false,
-    quizScore: null,
-    lastAccessed: "",
-  },
-};
+> = {};

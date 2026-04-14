@@ -14,11 +14,18 @@ import {
   Award,
   LogOut,
 } from "lucide-react";
-import {
-  TRAINING_COURSES,
-  COURSE_PROGRESS,
-} from "@/lib/training-data";
+import { TRAINING_COURSES } from "@/lib/training-data";
 import type { TrainingCourse } from "@/lib/training-data";
+
+/* ================================================================== */
+/*  PROGRESS TYPES                                                     */
+/* ================================================================== */
+type CourseProgress = {
+  completed: boolean;
+  quizScore: number | null;
+  lastAccessed: string;
+  readSections: string[]; // array of "courseId-sectionIdx" strings
+};
 
 /* ================================================================== */
 /*  DESIGN TOKENS                                                      */
@@ -208,10 +215,12 @@ function CourseSidebar({
   courses,
   activeCourse,
   onSelect,
+  courseProgress,
 }: {
   courses: TrainingCourse[];
   activeCourse: number;
   onSelect: (i: number) => void;
+  courseProgress: Record<string, CourseProgress>;
 }) {
   return (
     <div
@@ -241,7 +250,7 @@ function CourseSidebar({
         Course Library
       </div>
       {courses.map((course, i) => {
-        const progress = COURSE_PROGRESS[course.id];
+        const progress = courseProgress[course.id];
         const isActive = i === activeCourse;
         const isCompleted = progress?.completed;
         const hasStarted = !!progress?.lastAccessed;
@@ -1050,45 +1059,29 @@ function QuizTab({
 export default function TrainingPage() {
   const router = useRouter();
   const [userName, setUserName] = useState("Loading...");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [activeCourse, setActiveCourse] = useState(0);
   const [activeTab, setActiveTab] = useState<"watch" | "study" | "quiz">("watch");
   const [openSections, setOpenSections] = useState<Set<number>>(new Set());
-  const [readSections, setReadSections] = useState<Set<string>>(() => {
-    /* Pre-populate read sections for completed courses */
-    const initial = new Set<string>();
-    TRAINING_COURSES.forEach((c) => {
-      if (COURSE_PROGRESS[c.id]?.completed) {
-        c.sections.forEach((_, si) => initial.add(`${c.id}-${si}`));
-      }
-    });
-    return initial;
-  });
-  const [quizStates, setQuizStates] = useState<Record<string, QuizState>>(() => {
-    const states: Record<string, QuizState> = {};
-    TRAINING_COURSES.forEach((c) => {
-      const progress = COURSE_PROGRESS[c.id];
-      if (progress?.completed && progress.quizScore != null) {
-        const answers = c.quiz.map((q, i) => {
-          if (i < (progress.quizScore ?? 0)) return q.correctIndex;
-          return q.correctIndex === 0 ? 1 : 0;
-        });
-        states[c.id] = {
-          currentQ: c.quiz.length - 1,
-          answers,
-          submitted: Array(c.quiz.length).fill(true),
-          showResults: true,
-        };
-      } else {
+  const [readSections, setReadSections] = useState<Set<string>>(new Set());
+  const [courseProgress, setCourseProgress] = useState<
+    Record<string, CourseProgress>
+  >({});
+  const [progressLoaded, setProgressLoaded] = useState(false);
+  const [quizStates, setQuizStates] = useState<Record<string, QuizState>>(
+    () => {
+      const states: Record<string, QuizState> = {};
+      TRAINING_COURSES.forEach((c) => {
         states[c.id] = {
           currentQ: 0,
           answers: Array(c.quiz.length).fill(null),
           submitted: Array(c.quiz.length).fill(false),
           showResults: false,
         };
-      }
-    });
-    return states;
-  });
+      });
+      return states;
+    }
+  );
 
   /* Fetch user on mount */
   useEffect(() => {
@@ -1098,16 +1091,79 @@ export default function TrainingPage() {
         if (data.user?.name) {
           setUserName(data.user.name);
         }
+        if (data.user?.email) {
+          setUserEmail(data.user.email);
+        }
       })
       .catch(() => {});
   }, []);
+
+  /* Load progress from localStorage once the user is known */
+  useEffect(() => {
+    if (!userEmail) return;
+    const key = `training-progress:${userEmail}`;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        setCourseProgress(JSON.parse(saved));
+      }
+    } catch {
+      // ignore parse errors
+    }
+    setProgressLoaded(true);
+  }, [userEmail]);
+
+  /* Persist progress whenever it changes */
+  useEffect(() => {
+    if (!userEmail || !progressLoaded) return;
+    const key = `training-progress:${userEmail}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(courseProgress));
+    } catch {
+      // ignore quota errors
+    }
+  }, [courseProgress, userEmail, progressLoaded]);
+
+  /* Rehydrate readSections + quizStates from progress once loaded */
+  useEffect(() => {
+    if (!progressLoaded) return;
+    const sections = new Set<string>();
+    TRAINING_COURSES.forEach((c) => {
+      const p = courseProgress[c.id];
+      if (p?.readSections) p.readSections.forEach((s) => sections.add(s));
+    });
+    setReadSections(sections);
+
+    setQuizStates((prev) => {
+      const next: Record<string, QuizState> = { ...prev };
+      TRAINING_COURSES.forEach((c) => {
+        const progress = courseProgress[c.id];
+        if (progress?.completed && progress.quizScore != null) {
+          const answers = c.quiz.map((q, i) => {
+            if (i < (progress.quizScore ?? 0)) return q.correctIndex;
+            return q.correctIndex === 0 ? 1 : 0;
+          });
+          next[c.id] = {
+            currentQ: c.quiz.length - 1,
+            answers,
+            submitted: Array(c.quiz.length).fill(true),
+            showResults: true,
+          };
+        }
+      });
+      return next;
+    });
+    // Only rehydrate when progress is first loaded from storage — subsequent
+    // in-session updates to courseProgress are driven by the handlers below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [progressLoaded]);
 
   const course = TRAINING_COURSES[activeCourse];
 
   const completedCount = useMemo(
     () =>
-      TRAINING_COURSES.filter((c) => COURSE_PROGRESS[c.id]?.completed).length,
-    []
+      TRAINING_COURSES.filter((c) => courseProgress[c.id]?.completed).length,
+    [courseProgress]
   );
 
   const studyComplete = useMemo(() => {
@@ -1123,13 +1179,44 @@ export default function TrainingPage() {
     });
   }, []);
 
-  const markRead = useCallback((key: string) => {
-    setReadSections((prev) => {
-      const next = new Set(prev);
-      next.add(key);
-      return next;
-    });
-  }, []);
+  const markRead = useCallback(
+    (key: string) => {
+      setReadSections((prev) => {
+        const next = new Set(prev);
+        next.add(key);
+        return next;
+      });
+      // Figure out which course this section belongs to.
+      const courseId = key.split("-").slice(0, 2).join("-");
+      setCourseProgress((prev) => {
+        const existing = prev[courseId];
+        if (existing?.completed) {
+          // Already completed — don't downgrade status, but still record the section.
+          const readSet = new Set(existing.readSections ?? []);
+          readSet.add(key);
+          return {
+            ...prev,
+            [courseId]: {
+              ...existing,
+              readSections: Array.from(readSet),
+            },
+          };
+        }
+        const readSet = new Set(existing?.readSections ?? []);
+        readSet.add(key);
+        return {
+          ...prev,
+          [courseId]: {
+            completed: false,
+            quizScore: existing?.quizScore ?? null,
+            lastAccessed: new Date().toISOString(),
+            readSections: Array.from(readSet),
+          },
+        };
+      });
+    },
+    []
+  );
 
   const handleCourseSelect = useCallback((i: number) => {
     setActiveCourse(i);
@@ -1142,16 +1229,48 @@ export default function TrainingPage() {
     router.push("/");
   }, [router]);
 
+  const recordQuizCompletion = useCallback(
+    (courseId: string, score: number) => {
+      setCourseProgress((prev) => {
+        const existing = prev[courseId];
+        return {
+          ...prev,
+          [courseId]: {
+            completed: true,
+            quizScore: score,
+            lastAccessed: new Date().toISOString(),
+            readSections: existing?.readSections ?? [],
+          },
+        };
+      });
+    },
+    []
+  );
+
   const currentQuizState = quizStates[course.id];
   const setCurrentQuizState = useCallback(
     (updater: React.SetStateAction<QuizState>) => {
-      setQuizStates((prev) => ({
-        ...prev,
-        [course.id]:
-          typeof updater === "function" ? updater(prev[course.id]) : updater,
-      }));
+      setQuizStates((prev) => {
+        const prevState = prev[course.id];
+        const nextState =
+          typeof updater === "function" ? updater(prevState) : updater;
+        // If the user just transitioned to the results screen, record completion.
+        if (!prevState.showResults && nextState.showResults) {
+          const score = course.quiz.reduce(
+            (acc, q, i) =>
+              acc + (nextState.answers[i] === q.correctIndex ? 1 : 0),
+            0
+          );
+          // Defer the progress update to avoid setState-in-setState warnings.
+          queueMicrotask(() => recordQuizCompletion(course.id, score));
+        }
+        return {
+          ...prev,
+          [course.id]: nextState,
+        };
+      });
     },
-    [course.id]
+    [course.id, course.quiz, recordQuizCompletion]
   );
 
   return (
@@ -1173,6 +1292,7 @@ export default function TrainingPage() {
           courses={TRAINING_COURSES}
           activeCourse={activeCourse}
           onSelect={handleCourseSelect}
+          courseProgress={courseProgress}
         />
         <div
           style={{
