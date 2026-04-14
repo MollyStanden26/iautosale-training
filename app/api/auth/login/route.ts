@@ -5,6 +5,8 @@ const TRAINING_USERS = [
   { email: "emma.richardson@iautosale.co.uk", password: "training2026", name: "Emma Richardson", role: "Sales Rep" },
   { email: "james.thornton@iautosale.co.uk", password: "training2026", name: "James Thornton", role: "Admin" },
   { email: "liam.patel@iautosale.co.uk", password: "training2026", name: "Liam Patel", role: "Recon Tech" },
+  { email: "kirsty.pullen@yahoo.co.uk", password: "training2026", name: "Kirsty Isabel Pullen", role: "Sales Rep" },
+  { email: "jmptrades93@gmail.com", password: "training2026", name: "Jamie Miller", role: "Sales Rep" },
   { email: "demo@iautosale.co.uk", password: "demo", name: "Demo User", role: "Sales Rep" },
 ];
 
