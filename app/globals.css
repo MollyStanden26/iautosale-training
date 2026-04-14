@@ -107,6 +107,10 @@ textarea::placeholder {
   }
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--ac-font-body);
   color: var(--ac-color-text-primary);

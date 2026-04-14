@@ -13,6 +13,7 @@ import {
   Lock,
   Award,
   LogOut,
+  Menu,
 } from "lucide-react";
 import { TRAINING_COURSES } from "@/lib/training-data";
 import type { TrainingCourse } from "@/lib/training-data";
@@ -54,6 +55,20 @@ const T = {
   indigoBg:      "#1A1040",
   navy:          "#0F1724",
 };
+
+/* ================================================================== */
+/*  RESPONSIVE HOOK                                                    */
+/* ================================================================== */
+function useIsMobile(breakpoint: number = 768): boolean {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < breakpoint);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [breakpoint]);
+  return isMobile;
+}
 
 /* ================================================================== */
 /*  HELPERS                                                            */
@@ -116,10 +131,14 @@ function TrainingNav({
   completedCount,
   userName,
   onSignOut,
+  isMobile,
+  onMenuClick,
 }: {
   completedCount: number;
   userName: string;
   onSignOut: () => void;
+  isMobile?: boolean;
+  onMenuClick?: () => void;
 }) {
   return (
     <div
@@ -127,39 +146,104 @@ function TrainingNav({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "14px 28px",
+        padding: isMobile ? "10px 14px" : "14px 28px",
         borderBottom: `1px solid ${T.border}`,
         background: T.bgCard,
+        gap: isMobile ? 8 : 0,
       }}
     >
-      {/* Left: Logo + title */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      {/* Left: Hamburger (mobile) + Logo + title */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: isMobile ? 10 : 16,
+          minWidth: 0,
+          flex: isMobile ? 1 : "initial",
+        }}
+      >
+        {isMobile && (
+          <button
+            onClick={onMenuClick}
+            aria-label="Open menu"
+            style={{
+              width: 36,
+              height: 36,
+              minHeight: 44,
+              minWidth: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "none",
+              border: `1px solid ${T.border}`,
+              borderRadius: 10,
+              color: T.textPrimary,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            <Menu size={18} />
+          </button>
+        )}
         <span
           className="font-heading"
-          style={{ fontSize: 20, color: T.teal200 }}
+          style={{
+            fontSize: isMobile ? 18 : 20,
+            color: T.teal200,
+            whiteSpace: "nowrap",
+          }}
         >
           <span style={{ fontWeight: 300 }}>iAuto</span>
           <span style={{ fontWeight: 900 }}>Sale</span>
         </span>
-        <div
-          style={{
-            width: 1,
-            height: 24,
-            background: T.border,
-          }}
-        />
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h1
-            className="font-heading"
-            style={{
-              fontSize: 16,
-              fontWeight: 700,
-              color: T.textPrimary,
-              margin: 0,
-            }}
-          >
-            Sales Training Programme
-          </h1>
+        {!isMobile && (
+          <>
+            <div
+              style={{
+                width: 1,
+                height: 24,
+                background: T.border,
+              }}
+            />
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <h1
+                className="font-heading"
+                style={{
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: T.textPrimary,
+                  margin: 0,
+                }}
+              >
+                Sales Training Programme
+              </h1>
+              <span
+                className="font-mono"
+                style={{
+                  fontSize: 11,
+                  color: T.teal200,
+                  background: `${T.teal}22`,
+                  padding: "3px 10px",
+                  borderRadius: 100,
+                }}
+              >
+                {completedCount} of 5 completed
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Right: Badge (mobile) / User + sign out */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: isMobile ? 8 : 16,
+          flexShrink: 0,
+        }}
+      >
+        {isMobile && (
           <span
             className="font-mono"
             style={{
@@ -168,40 +252,45 @@ function TrainingNav({
               background: `${T.teal}22`,
               padding: "3px 10px",
               borderRadius: 100,
+              whiteSpace: "nowrap",
             }}
           >
-            {completedCount} of 5 completed
+            {completedCount}/5
           </span>
-        </div>
-      </div>
-
-      {/* Right: User + sign out */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <span
-          className="font-body"
-          style={{ fontSize: 13, color: T.textSecondary }}
-        >
-          {userName}
-        </span>
+        )}
+        {!isMobile && (
+          <span
+            className="font-body"
+            style={{ fontSize: 13, color: T.textSecondary }}
+          >
+            {userName}
+          </span>
+        )}
         <button
           onClick={onSignOut}
+          aria-label={isMobile ? "Sign out" : undefined}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            padding: "6px 14px",
+            justifyContent: "center",
+            gap: isMobile ? 0 : 6,
+            padding: isMobile ? 0 : "6px 14px",
+            width: isMobile ? 36 : undefined,
+            height: isMobile ? 36 : undefined,
+            minHeight: 44,
+            minWidth: isMobile ? 44 : undefined,
             fontSize: 13,
             fontWeight: 500,
             color: T.textMuted,
             background: "none",
             border: `1px solid ${T.border}`,
-            borderRadius: 100,
+            borderRadius: isMobile ? "50%" : 100,
             cursor: "pointer",
             transition: "all 0.15s ease",
           }}
         >
-          <LogOut size={14} />
-          Sign out
+          <LogOut size={isMobile ? 16 : 14} />
+          {!isMobile && "Sign out"}
         </button>
       </div>
     </div>
@@ -225,7 +314,8 @@ function CourseSidebar({
   return (
     <div
       style={{
-        width: 280,
+        width: "100%",
+        maxWidth: 320,
         minHeight: "100%",
         background: T.bgSidebar,
         borderRight: `1px solid ${T.border}`,
@@ -264,6 +354,7 @@ function CourseSidebar({
               alignItems: "flex-start",
               gap: 10,
               padding: "12px 10px",
+              minHeight: 44,
               borderRadius: 10,
               border: "none",
               cursor: "pointer",
@@ -375,9 +466,11 @@ function CourseSidebar({
 function TabBar({
   activeTab,
   onTabChange,
+  isMobile,
 }: {
   activeTab: "watch" | "study" | "quiz";
   onTabChange: (t: "watch" | "study" | "quiz") => void;
+  isMobile?: boolean;
 }) {
   const tabs: { key: "watch" | "study" | "quiz"; label: string; icon: React.ReactNode }[] = [
     { key: "watch", label: "Watch", icon: <Video size={15} /> },
@@ -391,7 +484,7 @@ function TabBar({
         display: "flex",
         gap: 0,
         borderBottom: `1px solid ${T.border}`,
-        padding: "0 28px",
+        padding: isMobile ? "0 16px" : "0 28px",
         background: T.bgCard,
       }}
     >
@@ -402,8 +495,10 @@ function TabBar({
           style={{
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: 7,
-            padding: "12px 20px",
+            padding: isMobile ? "12px 14px" : "12px 20px",
+            minHeight: 44,
             fontSize: 13,
             fontWeight: activeTab === tab.key ? 600 : 400,
             color: activeTab === tab.key ? T.teal200 : T.textMuted,
@@ -415,6 +510,7 @@ function TabBar({
                 : "2px solid transparent",
             cursor: "pointer",
             transition: "all 0.15s ease",
+            flex: isMobile ? 1 : "initial",
           }}
         >
           {tab.icon}
@@ -428,9 +524,9 @@ function TabBar({
 /* ================================================================== */
 /*  VIDEO TAB                                                          */
 /* ================================================================== */
-function VideoTab({ course }: { course: TrainingCourse }) {
+function VideoTab({ course, isMobile }: { course: TrainingCourse; isMobile?: boolean }) {
   return (
-    <div style={{ padding: 28 }}>
+    <div style={{ padding: isMobile ? 16 : 28 }}>
       <div
         style={{
           position: "relative",
@@ -460,7 +556,7 @@ function VideoTab({ course }: { course: TrainingCourse }) {
       <h2
         className="font-heading"
         style={{
-          fontSize: 20,
+          fontSize: isMobile ? 18 : 20,
           fontWeight: 700,
           color: T.textPrimary,
           margin: "20px 0 8px",
@@ -492,15 +588,17 @@ function StudyTab({
   toggleSection,
   readSections,
   markRead,
+  isMobile,
 }: {
   course: TrainingCourse;
   openSections: Set<number>;
   toggleSection: (i: number) => void;
   readSections: Set<string>;
   markRead: (key: string) => void;
+  isMobile?: boolean;
 }) {
   return (
-    <div style={{ padding: 28, overflowY: "auto" }}>
+    <div style={{ padding: isMobile ? 16 : 28, overflowY: "auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
         <BookOpen size={18} style={{ color: T.teal200 }} />
         <h2
@@ -541,7 +639,8 @@ function StudyTab({
                   alignItems: "center",
                   gap: 10,
                   width: "100%",
-                  padding: "14px 18px",
+                  padding: isMobile ? "14px 14px" : "14px 18px",
+                  minHeight: 44,
                   background: "none",
                   border: "none",
                   cursor: "pointer",
@@ -581,7 +680,7 @@ function StudyTab({
 
               {/* Body */}
               {isOpen && (
-                <div style={{ padding: "0 18px 18px 44px" }}>
+                <div style={{ padding: isMobile ? "0 14px 16px 34px" : "0 18px 18px 44px" }}>
                   <p
                     className="font-body"
                     style={{
@@ -641,11 +740,13 @@ function QuizTab({
   quizState,
   setQuizState,
   studyComplete,
+  isMobile,
 }: {
   course: TrainingCourse;
   quizState: QuizState;
   setQuizState: React.Dispatch<React.SetStateAction<QuizState>>;
   studyComplete: boolean;
+  isMobile?: boolean;
 }) {
   const { quiz } = course;
   const { currentQ, answers, submitted, showResults } = quizState;
@@ -664,7 +765,7 @@ function QuizTab({
     return (
       <div
         style={{
-          padding: 28,
+          padding: isMobile ? 16 : 28,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -705,20 +806,20 @@ function QuizTab({
   /* Results view */
   if (showResults) {
     return (
-      <div style={{ padding: 28, maxWidth: 560, margin: "0 auto" }}>
+      <div style={{ padding: isMobile ? 16 : 28, maxWidth: 560, margin: "0 auto" }}>
         <div
           style={{
             borderRadius: 14,
             border: `1px solid ${T.border}`,
             background: T.bgCard,
-            padding: 28,
+            padding: isMobile ? 18 : 28,
             textAlign: "center",
           }}
         >
           <div
             style={{
-              width: 64,
-              height: 64,
+              width: isMobile ? 56 : 64,
+              height: isMobile ? 56 : 64,
               borderRadius: "50%",
               margin: "0 auto 16px",
               display: "flex",
@@ -727,12 +828,12 @@ function QuizTab({
               background: passed ? T.greenBg : T.amberBg,
             }}
           >
-            <Award size={28} style={{ color: passed ? T.green : T.amber }} />
+            <Award size={isMobile ? 24 : 28} style={{ color: passed ? T.green : T.amber }} />
           </div>
           <h3
             className="font-heading"
             style={{
-              fontSize: 28,
+              fontSize: isMobile ? 24 : 28,
               fontWeight: 800,
               color: T.textPrimary,
               margin: "0 0 6px",
@@ -821,6 +922,7 @@ function QuizTab({
             }
             style={{
               padding: "10px 28px",
+              minHeight: 44,
               fontSize: 13,
               fontWeight: 600,
               color: "#fff",
@@ -845,7 +947,7 @@ function QuizTab({
   const isLastQuestion = currentQ === quiz.length - 1;
 
   return (
-    <div style={{ padding: 28, maxWidth: 620, margin: "0 auto" }}>
+    <div style={{ padding: isMobile ? 16 : 28, maxWidth: 620, margin: "0 auto" }}>
       {/* Progress */}
       <div
         style={{
@@ -1021,6 +1123,7 @@ function QuizTab({
             }}
             style={{
               padding: "10px 28px",
+              minHeight: 44,
               fontSize: 13,
               fontWeight: 600,
               color: selected === null ? T.textDim : "#fff",
@@ -1051,6 +1154,7 @@ function QuizTab({
               alignItems: "center",
               gap: 6,
               padding: "10px 28px",
+              minHeight: 44,
               fontSize: 13,
               fontWeight: 600,
               color: "#fff",
@@ -1074,6 +1178,8 @@ function QuizTab({
 /* ================================================================== */
 export default function TrainingPage() {
   const router = useRouter();
+  const isMobile = useIsMobile();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [userName, setUserName] = useState("Loading...");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [activeCourse, setActiveCourse] = useState(0);
@@ -1295,31 +1401,80 @@ export default function TrainingPage() {
         completedCount={completedCount}
         userName={userName}
         onSignOut={handleSignOut}
+        isMobile={isMobile}
+        onMenuClick={() => setMobileSidebarOpen(true)}
       />
       <div
         style={{
           flex: 1,
-          display: "grid",
-          gridTemplateColumns: "280px 1fr",
+          display: isMobile ? "block" : "grid",
+          gridTemplateColumns: isMobile ? undefined : "280px 1fr",
           overflow: "hidden",
+          position: "relative",
         }}
       >
-        <CourseSidebar
-          courses={TRAINING_COURSES}
-          activeCourse={activeCourse}
-          onSelect={handleCourseSelect}
-          courseProgress={courseProgress}
-        />
+        {isMobile ? (
+          <>
+            {mobileSidebarOpen && (
+              <div
+                onClick={() => setMobileSidebarOpen(false)}
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.6)",
+                  zIndex: 50,
+                }}
+              />
+            )}
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: "85%",
+                maxWidth: 320,
+                background: T.bgSidebar,
+                zIndex: 51,
+                transform: mobileSidebarOpen ? "translateX(0)" : "translateX(-100%)",
+                transition: "transform 0.25s ease",
+                overflowY: "auto",
+              }}
+            >
+              <CourseSidebar
+                courses={TRAINING_COURSES}
+                activeCourse={activeCourse}
+                onSelect={(i) => {
+                  handleCourseSelect(i);
+                  setMobileSidebarOpen(false);
+                }}
+                courseProgress={courseProgress}
+              />
+            </div>
+          </>
+        ) : (
+          <CourseSidebar
+            courses={TRAINING_COURSES}
+            activeCourse={activeCourse}
+            onSelect={handleCourseSelect}
+            courseProgress={courseProgress}
+          />
+        )}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
+            height: isMobile ? "100%" : undefined,
           }}
         >
-          <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+          <TabBar
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            isMobile={isMobile}
+          />
           <div style={{ flex: 1, overflowY: "auto" }}>
-            {activeTab === "watch" && <VideoTab course={course} />}
+            {activeTab === "watch" && <VideoTab course={course} isMobile={isMobile} />}
             {activeTab === "study" && (
               <StudyTab
                 course={course}
@@ -1327,6 +1482,7 @@ export default function TrainingPage() {
                 toggleSection={toggleSection}
                 readSections={readSections}
                 markRead={markRead}
+                isMobile={isMobile}
               />
             )}
             {activeTab === "quiz" && (
@@ -1335,6 +1491,7 @@ export default function TrainingPage() {
                 quizState={currentQuizState}
                 setQuizState={setCurrentQuizState}
                 studyComplete={studyComplete}
+                isMobile={isMobile}
               />
             )}
           </div>
