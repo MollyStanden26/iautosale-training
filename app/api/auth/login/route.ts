@@ -8,6 +8,7 @@ const TRAINING_USERS = [
   { email: "kirsty.pullen@yahoo.co.uk", password: "training2026", name: "Kirsty Isabel Pullen", role: "Sales Rep" },
   { email: "jmptrades93@gmail.com", password: "training2026", name: "Jamie Miller", role: "Sales Rep" },
   { email: "joshlawler63@gmail.com", password: "training2026", name: "Josh Lawler", role: "Sales Rep" },
+  { email: "beecroftshanon@gmail.com", password: "training2026", name: "Shanon Beecroft", role: "Sales Rep" },
   { email: "demo@iautosale.co.uk", password: "demo", name: "Demo User", role: "Sales Rep" },
 ];
 
